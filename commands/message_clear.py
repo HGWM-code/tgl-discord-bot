@@ -11,7 +11,7 @@ class clear(commands.Cog):
     async def clear(self, interaction: Interaction, amount: int):
 
         await interaction.channel.purge(limit=amount)
-        await interaction.response.send_message("Messages deleted")
+        await interaction.response.send("Messages deleted")
 
 async def setup(bot):
     await bot.add_cog(clear(bot))

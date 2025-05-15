@@ -4,7 +4,7 @@ import json
 import discord
 import regex
 
-class team_register(commands.Cog):
+class team_removeMember(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -13,8 +13,8 @@ class team_register(commands.Cog):
 
     bot = commands.Bot(command_prefix="$", intents=intents)
 
-    @app_commands.command(name="team-register", description="Register a team!")
-    async def team_register(self, interaction, team_name: str, team_owner: str):
+    @app_commands.command(name="team-remove-member", description="Remove a member from a team")
+    async def team_removeMember(self, interaction, team_name: str, member: str):
         #############################################################
         #                                                           #
         #   Common setup for each Command interacting with Config   #
@@ -47,16 +47,17 @@ class team_register(commands.Cog):
          else:
              await interaction.response.send_message("Invalid team name format. Please use the correct format and Ping the team role.")
              return
-         
+
+      
          regex_pattern = r"<@(.*?)>"
-         match = regex.match(regex_pattern, team_owner)
+         match = regex.match(regex_pattern, member)
 
          if match:
-            team_owner = match.group(1)
+            member = match.group(1)
          else:
             await interaction.response.send_message("Invalid member format. Please use the correct format and Ping the member/s.")
             return
-
+         
          server_roles = interaction.guild.roles
 
          role_found = False
@@ -67,17 +68,17 @@ class team_register(commands.Cog):
                config = load_config()
                guild_id = str(interaction.guild.id)
 
-               team_owner_alias = await interaction.guild.fetch_member(int(team_owner))
+               member_alias = await interaction.guild.fetch_member(int(member))
 
                if team_name in config["guilds"][guild_id]["teams"]:
-                     await interaction.response.send_message("This team is already registered.")
+                     del config["guilds"][guild_id]["teams"][team_name]["member"][member]
+                     save_config(config)
+
+                     await interaction.response.send_message(f"<@{member}> has been removed from the team <@&{team_name}>.")
                      return
                else:
-                     config["guilds"][guild_id]["teams"][team_name] = {"alias": role.name, "member": {}}
-                     config["guilds"][guild_id]["teams"][team_name]["member"][team_owner] = {"alias": team_owner_alias.display_name, "leader": True, "memberPlus": True}
-                     save_config(config)
-                     await interaction.response.send_message(f"<@&{team_name}> registered successfully.")
+                     await interaction.response.send_message(f"<@&{team_name}> is not registered.")
                      break
 
 async def setup(bot):
-    await bot.add_cog(team_register(bot))
+    await bot.add_cog(team_removeMember(bot))
