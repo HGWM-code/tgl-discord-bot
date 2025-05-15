@@ -4,8 +4,18 @@
             "teams": {
                 "1372279965130817556": {
                     "alias": "Team1",
-                    "memberPlus": {},
-                    "member": {}
+                    "member": {
+                        "747440512729874452": {
+                            "alias": "homeless guy with MILK",
+                            "leader": true,
+                            "memberPlus": true
+                        },
+                        "580156852851965952": {
+                            "alias": "Gon",
+                            "leader": false,
+                            "memberPlus": false
+                        }
+                    }
                 }
             }
         }

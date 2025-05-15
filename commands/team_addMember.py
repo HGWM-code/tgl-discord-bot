@@ -71,9 +71,8 @@ class team_addMember(commands.Cog):
                member_alias = await interaction.guild.fetch_member(int(member))
 
                if team_name in config["guilds"][guild_id]["teams"]:
-                     config["guilds"][guild_id]["teams"][team_name]["member"][member] = {"alias": member_alias.nickname}
+                     config["guilds"][guild_id]["teams"][team_name]["member"][member] = {"alias": member_alias.display_name, "leader": False, "memberPlus": False}
                      save_config(config)
-
                      await interaction.response.send_message(f"<@{member}> has been added to the team <@&{team_name}>.")
                      return
                else:

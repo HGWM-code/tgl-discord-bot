@@ -4,7 +4,7 @@ import json
 import discord
 import regex
 
-class team_register(commands.Cog):
+class team_promote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -13,8 +13,8 @@ class team_register(commands.Cog):
 
     bot = commands.Bot(command_prefix="$", intents=intents)
 
-    @app_commands.command(name="team-register", description="Register a team!")
-    async def team_register(self, interaction, team_name: str, team_owner: str):
+    @app_commands.command(name="team-promote", description="Promote a member of a team")
+    async def team_promote(self, interaction, team_name: str, member: str):
         #############################################################
         #                                                           #
         #   Common setup for each Command interacting with Config   #
@@ -38,8 +38,11 @@ class team_register(commands.Cog):
         #                                        #
         ##########################################
       
-         regex_pattern = r"<@&(.*?)>"
+         config = load_config()
+         guild_id = str(interaction.guild.id)
+         server_roles = interaction.guild.roles
 
+         regex_pattern = r"<@&(.*?)>"
          match = regex.match(regex_pattern, team_name)
 
          if match:
@@ -47,37 +50,46 @@ class team_register(commands.Cog):
          else:
              await interaction.response.send_message("Invalid team name format. Please use the correct format and Ping the team role.")
              return
-         
+
+
          regex_pattern = r"<@(.*?)>"
-         match = regex.match(regex_pattern, team_owner)
+         match = regex.match(regex_pattern, member)
 
          if match:
-            team_owner = match.group(1)
+            member = match.group(1)
          else:
             await interaction.response.send_message("Invalid member format. Please use the correct format and Ping the member/s.")
             return
 
-         server_roles = interaction.guild.roles
 
-         role_found = False
+         if team_name not in config["guilds"][guild_id]["teams"]:
+                await interaction.response.send_message(f"<@&{team_name}> is not registered.")
+                return
+
+
+         if member not in config["guilds"][guild_id]["teams"][team_name]["member"]:
+                await interaction.response.send_message(f"<@{member}> is not a member of the team.")
+                return
+         
+
+         if config["guilds"][guild_id]["teams"][team_name]["member"][member]["memberPlus"] == True:
+                await interaction.response.send_message(f"<@{member}> cannot be promoted further.")
+                return
+         
+
+         requester = interaction.user.id
+         if config["guilds"][guild_id]["teams"][team_name]["member"][str(requester)]["leader"] != True:
+                await interaction.response.send_message(f"You cannot promote members.")
+                return
+
          for role in server_roles:
             if role.id == int(team_name):
-               role_found = True
 
-               config = load_config()
-               guild_id = str(interaction.guild.id)
+                    config["guilds"][guild_id]["teams"][team_name]["member"][member]["memberPlus"] = True
+                    save_config(config)
 
-               team_owner_alias = await interaction.guild.fetch_member(int(team_owner))
-
-               if team_name in config["guilds"][guild_id]["teams"]:
-                     await interaction.response.send_message("This team is already registered.")
-                     return
-               else:
-                     config["guilds"][guild_id]["teams"][team_name] = {"alias": role.name, "member": {}}
-                     config["guilds"][guild_id]["teams"][team_name]["member"][team_owner] = {"alias": team_owner_alias.display_name, "leader": True, "memberPlus": True}
-                     save_config(config)
-                     await interaction.response.send_message(f"<@&{team_name}> registered successfully.")
-                     break
+                    await interaction.response.send_message(f"<@{member}> has been promoted.")
+                    return
 
 async def setup(bot):
-    await bot.add_cog(team_register(bot))
+    await bot.add_cog(team_promote(bot))
