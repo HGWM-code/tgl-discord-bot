@@ -59,11 +59,11 @@ async def on_ready(): # Wenn der Bot Startet werden folgende Sachen überprüft
     for guild in bot.guilds:
         guild_id = str(guild.id)
         if guild_id not in config["guilds"]:
-            config["guilds"][guild_id] = {"teams": {"memberPlus": {}, "member": {}}}
+            config["guilds"][guild_id] = {"teams": {}}
             print(f'Added new guild to config: {guild.name} (ID: {guild.id})')
         else:
-            if "count_to_100" not in config["guilds"][guild_id]:
-                config["guilds"][guild_id]["teams"] = {"memberPlus": {}, "member": {}}
+            if "teams" not in config["guilds"][guild_id]:
+                config["guilds"][guild_id]["teams"] = {}
                 print(f"Added missing key 'teams' for guild {guild.name} (ID: {guild.id})")
         
     save_config(config)
@@ -106,6 +106,9 @@ async def on_message(message):
 async def load_extensions():    # laden der Commands
     await bot.load_extension("commands.greeting") 
     await bot.load_extension("commands.message_clear") 
+    await bot.load_extension("commands.team_register") 
+    await bot.load_extension("commands.team_unregister")
+    await bot.load_extension("commands.team_addMember")
 
 async def main():
     async with bot:
