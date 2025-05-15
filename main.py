@@ -109,6 +109,7 @@ async def load_extensions():    # laden der Commands
     await bot.load_extension("commands.team_register") 
     await bot.load_extension("commands.team_unregister")
     await bot.load_extension("commands.team_addMember")
+    await bot.load_extension("commands.team_removeMember")
 
 async def main():
     async with bot:
