@@ -63,22 +63,28 @@ class team_removeMember(commands.Cog):
          role_found = False
          for role in server_roles:
             if role.id == int(team_name):
-               role_found = True
+                role_found = True
 
-               config = load_config()
-               guild_id = str(interaction.guild.id)
+                config = load_config()
+                guild_id = str(interaction.guild.id)
 
-               member_alias = await interaction.guild.fetch_member(int(member))
+                member_alias = await interaction.guild.fetch_member(int(member))
 
-               if team_name in config["guilds"][guild_id]["teams"]:
-                     del config["guilds"][guild_id]["teams"][team_name]["member"][member]
-                     save_config(config)
+                if not discord.utils.get(interaction.user.roles, name="Staff"):
+                    requester = interaction.user.id
+                    if config["guilds"][guild_id]["teams"][team_name]["member"][str(requester)]["leader"] != True:
+                        await interaction.response.send_message(f"You have no permission to remove members.")
+                        return
 
-                     await interaction.response.send_message(f"<@{member}> has been removed from the team <@&{team_name}>.")
-                     return
-               else:
+                if team_name not in config["guilds"][guild_id]["teams"]:                     
                      await interaction.response.send_message(f"<@&{team_name}> is not registered.")
-                     break
+                     return
+
+                del config["guilds"][guild_id]["teams"][team_name]["member"][member]
+                save_config(config)
+
+                await interaction.response.send_message(f"<@{member}> has been removed from the team <@&{team_name}>.")
+                return
 
 async def setup(bot):
     await bot.add_cog(team_removeMember(bot))

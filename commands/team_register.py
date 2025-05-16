@@ -14,6 +14,7 @@ class team_register(commands.Cog):
     bot = commands.Bot(command_prefix="$", intents=intents)
 
     @app_commands.command(name="team-register", description="Register a team!")
+    @app_commands.checks.has_permissions(administrator=True)
     async def team_register(self, interaction, team_name: str, team_owner: str):
         #############################################################
         #                                                           #
@@ -72,12 +73,12 @@ class team_register(commands.Cog):
                if team_name in config["guilds"][guild_id]["teams"]:
                      await interaction.response.send_message("This team is already registered.")
                      return
-               else:
-                     config["guilds"][guild_id]["teams"][team_name] = {"alias": role.name, "member": {}}
-                     config["guilds"][guild_id]["teams"][team_name]["member"][team_owner] = {"alias": team_owner_alias.display_name, "leader": True, "memberPlus": True}
-                     save_config(config)
-                     await interaction.response.send_message(f"<@&{team_name}> registered successfully.")
-                     break
+               
+               config["guilds"][guild_id]["teams"][team_name] = {"alias": role.name, "member": {}}
+               config["guilds"][guild_id]["teams"][team_name]["member"][team_owner] = {"alias": team_owner_alias.display_name, "leader": True, "memberPlus": True}
+               save_config(config)
+               await interaction.response.send_message(f"<@&{team_name}> registered successfully.")
+               break
 
 async def setup(bot):
     await bot.add_cog(team_register(bot))

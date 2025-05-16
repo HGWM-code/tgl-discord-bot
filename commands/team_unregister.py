@@ -14,6 +14,7 @@ class team_unregister(commands.Cog):
     bot = commands.Bot(command_prefix="$", intents=intents)
 
     @app_commands.command(name="team-unregister", description="Unregister a team")
+    @app_commands.checks.has_permissions(administrator=True)
     async def team_register(self, interaction, team_name: str):
         #############################################################
         #                                                           #
@@ -53,19 +54,19 @@ class team_unregister(commands.Cog):
          role_found = False
          for role in server_roles:
             if role.id == int(team_name):
-               role_found = True
+                role_found = True
 
-               config = load_config()
-               guild_id = str(interaction.guild.id)
+                config = load_config()
+                guild_id = str(interaction.guild.id)
 
-               if team_name in config["guilds"][guild_id]["teams"]:
-                     del config["guilds"][guild_id]["teams"][team_name]
-                     save_config(config)
-                     await interaction.response.send_message(f"<@&{team_name}> has been unregistered.")
-                     return
-               else:
+                if team_name not in config["guilds"][guild_id]["teams"]:
                      await interaction.response.send_message(f"<@&{team_name}> is not registered.")
-                     break
+                     return
+
+                del config["guilds"][guild_id]["teams"][team_name]
+                save_config(config)
+                await interaction.response.send_message(f"<@&{team_name}> has been unregistered.")
+                return
 
 async def setup(bot):
     await bot.add_cog(team_unregister(bot))
