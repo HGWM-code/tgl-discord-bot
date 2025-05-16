@@ -70,14 +70,34 @@ class team_addMember(commands.Cog):
 
                member_alias = await interaction.guild.fetch_member(int(member))
 
-               if team_name in config["guilds"][guild_id]["teams"]:
-                     config["guilds"][guild_id]["teams"][team_name]["member"][member] = {"alias": member_alias.display_name, "leader": False, "memberPlus": False}
-                     save_config(config)
-                     await interaction.response.send_message(f"<@{member}> has been added to the team <@&{team_name}>.")
+               if not discord.utils.get(interaction.user.roles, name="Staff"):
+                  requester = interaction.user.id
+                  if config["guilds"][guild_id]["teams"][team_name]["member"][str(requester)]["leader"] != True:
+                     await interaction.response.send_message(f"You you have no permissions to add members.")
                      return
-               else:
-                     await interaction.response.send_message(f"<@&{team_name}> is not registered.")
+
+               if team_name not in config["guilds"][guild_id]["teams"]:
+                  await interaction.response.send_message(f"<@&{team_name}> is not registered.")
+                  return  
+               
+               config["guilds"][guild_id]["teams"][team_name]["member"][member] = {"alias": member_alias.display_name, "leader": False, "memberPlus": False}
+               save_config(config)
+
+               for user in config["guilds"][guild_id]["teams"][team_name]["member"]:
+                  if config["guilds"][guild_id]["teams"][team_name]["member"][user]["leader"] == True:
+                     team_owner = user
                      break
+               
+               team_role = interaction.guild.get_role(int(team_name)) or discord.Color.default()
+
+               embed = discord.Embed(title="New Member Added",
+                     description=f"<@{member}> has been added to <@&{team_name}>.\n\nTeam Owner: <@{team_owner}>",
+                     colour=(team_role.colour.r, team_role.colour.g, team_role.colour.b))
+               embed.set_author(name=interaction.guild.name, icon_url=interaction.guild.icon.url)
+                     
+               embed.set_thumbnail(url=interaction.guild.icon.url)
+
+               await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(team_addMember(bot))

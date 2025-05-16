@@ -61,6 +61,12 @@ class team_demote(commands.Cog):
             await interaction.response.send_message("Invalid member format. Please use the correct format and Ping the member/s.")
             return
 
+         if not discord.utils.get(interaction.user.roles, name="Staff"):
+            requester = interaction.user.id
+            if config["guilds"][guild_id]["teams"][team_name]["member"][str(requester)]["leader"] != True:
+                    await interaction.response.send_message(f"You have no permission to demote members.")
+                    return
+
 
          if team_name not in config["guilds"][guild_id]["teams"]:
                 await interaction.response.send_message(f"<@&{team_name}> is not registered.")
@@ -71,16 +77,14 @@ class team_demote(commands.Cog):
                 await interaction.response.send_message(f"<@{member}> is not a member of the team.")
                 return
          
+         if member == str(interaction.user.id):
+                await interaction.response.send_message(f"You cannot demote yourself.")
+                return
 
          if config["guilds"][guild_id]["teams"][team_name]["member"][member]["memberPlus"] == False:
                 await interaction.response.send_message(f"<@{member}> cannot be demoted further.")
                 return
          
-
-         requester = interaction.user.id
-         if config["guilds"][guild_id]["teams"][team_name]["member"][str(requester)]["leader"] != True:
-                await interaction.response.send_message(f"You cannot demote members.")
-                return
 
          for role in server_roles:
             if role.id == int(team_name):
